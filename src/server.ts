@@ -2,6 +2,7 @@
 import { Server } from "http";
 import mongoose from "mongoose";
 import app from "./app";
+import { envVars } from "./app/config/env";
 
 let server: Server;
 
@@ -10,13 +11,13 @@ const startServer = async () => {
     // connect to database
     await mongoose.connect(
       // Database string
-      "mongodb+srv://admin:admin@cluster0.h5pr3.mongodb.net/l2b5-ph-tour-management?retryWrites=true&w=majority&appName=Cluster0"
+      envVars.DB_URL
     );
     console.log("Connected to DB");
 
     // express server
-    server = app.listen(5000, () => {
-      console.log("server is listening to port 5000");
+    server = app.listen(envVars.PORT, () => {
+      console.log(`server is listening to port ${envVars.PORT}`);
     });
   } catch (error) {
     console.log(error);
@@ -78,3 +79,5 @@ process.on("SIGTERM", () => {
   // if server not found then close node app
   process.exit(1);
 });
+
+console.log(envVars.NODE_ENV);
