@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 
 const app = express();
 
+// root route
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
     message:
