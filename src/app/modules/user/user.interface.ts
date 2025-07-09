@@ -1,13 +1,13 @@
 import { Types } from "mongoose";
 
-enum Role {
+export enum Role {
   SUPER_ADMIN = "SUPER_ADMIN",
   ADMIN = "ADMIN",
   USER = "USER",
   GUIDE = "GUIDE",
 }
 
-interface IAuthProvider {
+export interface IAuthProvider {
   provider: string; // "Google", "Credential"
   providerId: string;
 }
@@ -27,7 +27,7 @@ export interface IUser {
   address?: string;
   isDeleted?: string;
   isActive?: IsActive;
-  isVerified?: string;
+  isVerified?: boolean;
   role: Role;
   auths: IAuthProvider[];
   booking?: Types.ObjectId[];
