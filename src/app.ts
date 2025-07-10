@@ -18,6 +18,7 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
+// global error handler
 app.use(globalErrorhandler);
 
 export default app;

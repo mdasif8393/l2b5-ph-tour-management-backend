@@ -2,6 +2,7 @@
 import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status-codes";
 import { UserServices } from "./user.service";
+import AppError from "../../errorHelpers/AppError";
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
