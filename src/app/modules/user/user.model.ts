@@ -25,7 +25,7 @@ const useSchema = new Schema<IUser>(
     phone: { type: String },
     picture: { type: String },
     address: { type: String },
-    isDeleted: { type: String, default: true },
+    isDeleted: { type: Boolean, default: false },
     isActive: {
       type: String,
       enum: Object.values(IsActive),
