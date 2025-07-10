@@ -2,6 +2,8 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import { router } from "./app/routes";
 
+import { globalErrorhandler } from "./app/middlewares/globalErrorhandler";
+
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -15,5 +17,7 @@ app.get("/", (req: Request, res: Response) => {
       "Welcome to Tour Management System Backend using Express Mongoose Mongo",
   });
 });
+
+app.use(globalErrorhandler);
 
 export default app;
