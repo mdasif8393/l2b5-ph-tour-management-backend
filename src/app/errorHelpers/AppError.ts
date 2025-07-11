@@ -3,14 +3,13 @@
 class AppError extends Error {
   public statusCode: number;
 
-  constructor(statusCode: number, message: string, stack: "") {
-    super(message); // throw new Error("Something Went Wrong")
+  constructor(statusCode: number, message: string, stack = "") {
+    super(message); // throw new Error("Something went wrong")
     this.statusCode = statusCode;
 
     if (stack) {
       this.stack = stack;
     } else {
-      // default Error part
       Error.captureStackTrace(this, this.constructor);
     }
   }
