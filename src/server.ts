@@ -79,5 +79,3 @@ process.on("SIGTERM", () => {
   // if server not found then close node app
   process.exit(1);
 });
-
-console.log(envVars.NODE_ENV);
