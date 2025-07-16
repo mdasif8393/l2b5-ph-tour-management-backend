@@ -9,7 +9,10 @@ import {
 import { envVars } from "./env";
 import { User } from "../modules/user/user.model";
 import { Role } from "../modules/user/user.interface";
+import { Strategy as LocalStrategy } from "passport-local";
+import bcrypt from "bcryptjs";
 
+// google login middleware
 passport.use(
   // initialize google authentication
   new GoogleStrategy(
@@ -51,6 +54,39 @@ passport.use(
       } catch (error) {
         console.log("Google strategy error", error);
         return done(error);
+      }
+    }
+  )
+);
+
+// credential login middleware
+passport.use(
+  new LocalStrategy(
+    {
+      usernameField: "email",
+      passwordField: "password",
+    },
+    async (email: string, password: string, done: any) => {
+      try {
+        const isUserExists = await User.findOne({ email });
+
+        // if user exists in database then show error
+        if (!isUserExists) {
+          return done(null, false, { message: "User does not exists" });
+        }
+        // if password match
+        const isPasswordMatched = await bcrypt.compare(
+          password as string,
+          isUserExists.password as string
+        );
+
+        if (!isPasswordMatched) {
+          return done(null, false, { message: "password does not match" });
+        }
+        return done(null, isUserExists);
+      } catch (error) {
+        console.log(error);
+        done(error);
       }
     }
   )
