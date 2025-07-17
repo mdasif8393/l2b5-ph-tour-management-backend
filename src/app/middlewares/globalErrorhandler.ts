@@ -13,7 +13,17 @@ export const globalErrorhandler = (
   let statusCode = 500;
   let message = `Something went wrong!! ${err.message}`;
 
-  if (err instanceof AppError) {
+  // Mongoose Duplicate key error means if unique email duplicate
+  if (err.code === 11000) {
+    const matchedArray = err.message.match(/"([^"]*)"/);
+    statusCode = 400;
+    message = `${matchedArray[1]} already exists`;
+  }
+  // Mongoose Cast error or Object Id error
+  else if (err.name === "CastError") {
+    statusCode = 400;
+    message = "Invalid MongoDB ObjectId. Please provide a valid _id";
+  } else if (err instanceof AppError) {
     statusCode = err.statusCode;
     message = err.message;
   } else if (err instanceof Error) {
