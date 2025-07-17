@@ -9,7 +9,7 @@ import httpStatus from "http-status-codes";
 import { User } from "../modules/user/user.model";
 
 // create access and refresh token
-export const crateUserTokens = (user: Partial<IUser>) => {
+export const createUserTokens = (user: Partial<IUser>) => {
   const jwtPayload = {
     userId: user._id,
     email: user.email,

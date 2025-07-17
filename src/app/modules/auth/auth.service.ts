@@ -7,7 +7,7 @@ import { User } from "../user/user.model";
 import bcrypt from "bcryptjs";
 
 import {
-  crateUserTokens,
+  createUserTokens,
   createNewAccessTokenWithRefreshToken,
 } from "../../utils/userTokens";
 import { JwtPayload } from "jsonwebtoken";
@@ -34,7 +34,7 @@ const credentialsLogin = async (payload: Partial<IUser>) => {
   }
 
   // create access and refresh token
-  const userToken = crateUserTokens(isUserExists);
+  const userToken = createUserTokens(isUserExists);
 
   // use .toObject to get unwanted data in postman
   const { password: pass, ...rest } = isUserExists.toObject();

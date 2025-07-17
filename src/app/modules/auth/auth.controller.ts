@@ -9,22 +9,44 @@ import { AuthServices } from "./auth.service";
 import AppError from "../../errorHelpers/AppError";
 import { setAuthCookie } from "../../utils/setCookie";
 import { JwtPayload } from "jsonwebtoken";
-import { crateUserTokens } from "../../utils/userTokens";
+import { createUserTokens } from "../../utils/userTokens";
 import { envVars } from "../../config/env";
+import passport from "passport";
 
 const credentialsLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const loginInfo = await AuthServices.credentialsLogin(req.body);
+    // const loginInfo = await AuthServices.credentialsLogin(req.body)
 
-    // save refresh token and access token to cookie
-    setAuthCookie(res, loginInfo);
+    passport.authenticate("local", async (err: any, user: any, info: any) => {
+      if (err) {
+        return next(new AppError(401, err));
+      }
 
-    sendResponse(res, {
-      success: true,
-      statusCode: httpStatus.OK,
-      message: "User logged on successfully",
-      data: loginInfo,
-    });
+      if (!user) {
+        // console.log("from !user");
+        // return new AppError(401, info.message)
+        return next(new AppError(401, info.message));
+      }
+
+      const userTokens = await createUserTokens(user);
+
+      // delete user.toObject().password
+
+      const { password: pass, ...rest } = user.toObject();
+
+      setAuthCookie(res, userTokens);
+
+      sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "User Logged In Successfully",
+        data: {
+          accessToken: userTokens.accessToken,
+          refreshToken: userTokens.refreshToken,
+          user: rest,
+        },
+      });
+    })(req, res, next);
   }
 );
 
@@ -116,7 +138,7 @@ const googleCallbackController = catchAsync(
       throw new AppError(httpStatus.NOT_FOUND, "User not found");
     }
     // create access and refresh token
-    const tokenInfo = crateUserTokens(user);
+    const tokenInfo = createUserTokens(user);
     // set access and refresh token to cookie
     setAuthCookie(res, tokenInfo);
     // redirect user

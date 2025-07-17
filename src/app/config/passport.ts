@@ -80,10 +80,10 @@ passport.use(
           (providerObjects) => providerObjects.provider === "google"
         );
 
-        if (isGoogleAuthenticated) {
+        if (isGoogleAuthenticated && !isUserExists.password) {
           return done(null, false, {
             message:
-              "Your are authenticated with Google. if we want to log in with credential then 1st log in with google set your password",
+              "Your are authenticated with Google. if we want to log in with credential then 1st log in with google and then set your password",
           });
         }
 

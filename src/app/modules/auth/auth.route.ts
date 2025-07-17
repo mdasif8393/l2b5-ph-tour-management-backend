@@ -21,6 +21,7 @@ router.get(
     passport.authenticate("google", {
       scope: ["profile", "email"],
       state: redirect as string,
+      // here manually trigger (req, res, next) here do extra things like redirect user
     })(req, res, next);
   }
 );
