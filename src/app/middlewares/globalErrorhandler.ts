@@ -14,6 +14,10 @@ export const globalErrorhandler = (
   res: Response,
   next: NextFunction
 ) => {
+  if (envVars.NODE_ENV === "development") {
+    console.log(err);
+  }
+
   let statusCode = 500;
   let message = `Something went wrong!! ${err.message}`;
   let errorSources: any = [];
@@ -61,7 +65,7 @@ export const globalErrorhandler = (
     success: false,
     message,
     errorSources,
-    err,
+    err: envVars.NODE_ENV === "development" ? err.stack : null,
     stack: envVars.NODE_ENV === "development" ? err.stack : null,
   });
 };
