@@ -15,6 +15,7 @@ export const globalErrorhandler = (
   next: NextFunction
 ) => {
   if (envVars.NODE_ENV === "development") {
+    // eslint-disable-next-line no-console
     console.log(err);
   }
 

@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import httpStatus from "http-status-codes";
 import { JwtPayload } from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";

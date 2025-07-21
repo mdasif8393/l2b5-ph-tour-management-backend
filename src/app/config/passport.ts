@@ -62,6 +62,7 @@ passport.use(
 // credential login middleware
 passport.use(
   new LocalStrategy(
+    // rename usernameField to email
     {
       usernameField: "email",
       passwordField: "password",

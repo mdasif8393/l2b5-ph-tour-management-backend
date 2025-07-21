@@ -31,7 +31,7 @@ const startServer = async () => {
   await seedSuperAdmin();
 })();
 
-// handle unhandle rejection error
+// handle unhandle rejection error occur from Promise
 process.on("unhandledRejection", (err) => {
   console.log(
     "Unhandle Rejection is detected... Server is shutting down.",
@@ -48,10 +48,7 @@ process.on("unhandledRejection", (err) => {
   process.exit(1);
 });
 
-// create unhandle exception error
-//// Promise.reject(new Error("Forget to handle unhandle rejection error"));
-
-// Uncaught Rejection Error
+// uncaught exception for undeclare variable used
 process.on("uncaughtException", (err) => {
   console.log(
     "Uncaught Exception is detected... Server is shutting down.",
