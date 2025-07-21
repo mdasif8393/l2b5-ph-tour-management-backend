@@ -21,8 +21,9 @@ const createTour = async (payload: ITour) => {
   return tour;
 };
 
-const getAllTours = async () => {
-  const tours = await Tour.find({});
+const getAllTours = async (query: Record<string, string>) => {
+  const filter = query;
+  const tours = await Tour.find(filter);
   const totalTours = await Tour.countDocuments();
   return {
     data: tours,
