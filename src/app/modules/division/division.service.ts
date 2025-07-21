@@ -8,14 +8,14 @@ const createDivision = async (payload: IDivision) => {
   }
 
   // create slug
-  const baseSlug = payload.name.toLowerCase().split(" ").join("-");
-  let slug = `${baseSlug}-division`;
+  // const baseSlug = payload.name.toLowerCase().split(" ").join("-");
+  // let slug = `${baseSlug}-division`;
 
-  let counter = 0;
-  while (await Division.exists({ slug })) {
-    slug = `${slug}-${counter++}`;
-  }
-  payload.slug = slug;
+  // let counter = 0;
+  // while (await Division.exists({ slug })) {
+  //   slug = `${slug}-${counter++}`;
+  // }
+  // payload.slug = slug;
   const division = await Division.create(payload);
 
   return division;
