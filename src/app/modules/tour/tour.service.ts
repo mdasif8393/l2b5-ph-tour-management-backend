@@ -43,18 +43,35 @@ const getAllTours = async (query: Record<string, string>) => {
     })),
   };
 
-  const tours = await Tour.find(searchQuery)
-    .find(filter)
+  const filterQuery = Tour.find(filter);
+
+  const tours = filterQuery.find(searchQuery);
+
+  const allTours = await tours
     .sort(sort)
     .select(fields)
     .skip(skip)
     .limit(limit);
+
+  // const tours = await Tour.find(searchQuery)
+  //   .find(filter)
+  //   .sort(sort)
+  //   .select(fields)
+  //   .skip(skip)
+  //   .limit(limit);
+
   const totalTours = await Tour.countDocuments();
+  const totalPage = Math.ceil(totalTours / limit);
+  const meta = {
+    page: page,
+    limit: limit,
+    total: totalTours,
+    totalPage: totalPage,
+  };
+
   return {
-    data: tours,
-    meta: {
-      total: totalTours,
-    },
+    data: allTours,
+    meta,
   };
 };
 
