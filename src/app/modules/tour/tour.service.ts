@@ -14,12 +14,21 @@ const createTour = async (payload: ITour) => {
 };
 
 const getAllTours = async (query: Record<string, string>) => {
-  const searchTerm = query.searchTerm || "";
-  // filter = { location: 'Khulna', searchTerm: 'Explore' }
+  // filter
   const filter = query;
+  // filter = { location: 'Khulna', searchTerm: 'Explore' }
   // delete searchTerm from filter. Now filter = { location: 'Khulna' }
+  // search
+  const searchTerm = query.searchTerm || "";
+  // sort
   const sort = query.sort || "-createdAt";
-  const fields = query.fields.split(",").join(" ") || "";
+  // select
+  const fields = query.fields?.split(",").join(" ") || "";
+  // pagination
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
+
+  const skip = (page - 1) * limit;
 
   for (const field of excludeField) {
     // delete filter["searchTerm"];
@@ -37,7 +46,9 @@ const getAllTours = async (query: Record<string, string>) => {
   const tours = await Tour.find(searchQuery)
     .find(filter)
     .sort(sort)
-    .select(fields);
+    .select(fields)
+    .skip(skip)
+    .limit(limit);
   const totalTours = await Tour.countDocuments();
   return {
     data: tours,
