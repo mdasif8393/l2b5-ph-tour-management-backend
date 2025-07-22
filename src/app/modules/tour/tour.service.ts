@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-dynamic-delete */
+import { excludeField } from "../../constant";
+import { tourSearchableFields } from "./tour.constant";
 import { ITour, ITourType } from "./tour.interface";
 import { Tour, TourType } from "./tour.model";
 
@@ -6,24 +9,35 @@ const createTour = async (payload: ITour) => {
   if (existingTour) {
     throw new Error("A tour with this title already exists.");
   }
-
-  // const baseSlug = payload.title.toLowerCase().split(" ").join("-");
-  // let slug = `${baseSlug}-tour`;
-
-  // let counter = 0;
-  // while (await Tour.exists({ slug })) {
-  //   slug = `${slug}-${counter++}`;
-  // }
-  // payload.slug = slug;
-
   const tour = await Tour.create(payload);
-
   return tour;
 };
 
 const getAllTours = async (query: Record<string, string>) => {
+  const searchTerm = query.searchTerm || "";
+  // filter = { location: 'Khulna', searchTerm: 'Explore' }
   const filter = query;
-  const tours = await Tour.find(filter);
+  // delete searchTerm from filter. Now filter = { location: 'Khulna' }
+  const sort = query.sort || "-createdAt";
+  const fields = query.fields.split(",").join(" ") || "";
+
+  for (const field of excludeField) {
+    // delete filter["searchTerm"];
+    // delete filter["sort"];
+    delete filter[field];
+  }
+
+  const searchQuery = {
+    $or: tourSearchableFields.map((field) => ({
+      // { title: { $regex: searchTerm, $options: "i" } }
+      [field]: { $regex: searchTerm, $options: "i" },
+    })),
+  };
+
+  const tours = await Tour.find(searchQuery)
+    .find(filter)
+    .sort(sort)
+    .select(fields);
   const totalTours = await Tour.countDocuments();
   return {
     data: tours,
@@ -35,13 +49,11 @@ const getAllTours = async (query: Record<string, string>) => {
 
 const updateTour = async (id: string, payload: Partial<ITour>) => {
   const existingTour = await Tour.findById(id);
-
   if (!existingTour) {
     throw new Error("Tour not found.");
   }
 
   const updatedTour = await Tour.findByIdAndUpdate(id, payload, { new: true });
-
   return updatedTour;
 };
 
