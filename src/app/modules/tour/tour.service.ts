@@ -12,7 +12,7 @@ const createTour = async (payload: ITour) => {
   return tour;
 };
 
-// const getAllToursOldWay = async (query: Record<string, string>) => {
+// const getAllToursOld = async (query: Record<string, string>) => {
 //   // filter
 //   const filter = query;
 //   // filter = { location: 'Khulna', searchTerm: 'Explore' }
@@ -77,21 +77,23 @@ const createTour = async (payload: ITour) => {
 const getAllTours = async (query: Record<string, string>) => {
   const queryBuilder = new QueryBuilder(Tour.find(), query);
 
-  const tours = await queryBuilder.search(tourSearchableFields).filter()
-    .modelQuery;
+  const tours = await queryBuilder
+    .search(tourSearchableFields)
+    .filter()
+    .sort()
+    .fields()
+    .paginate();
 
-  // const totalTours = await Tour.countDocuments();
-  // const totalPage = Math.ceil(totalTours / limit);
-  // const meta = {
-  //   page: page,
-  //   limit: limit,
-  //   total: totalTours,
-  //   totalPage: totalPage,
-  // };
+  // const meta = await queryBuilder.getMeta();
+
+  const [data, meta] = await Promise.all([
+    tours.build(),
+    queryBuilder.getMeta(),
+  ]);
 
   return {
-    data: tours,
-    // meta,
+    data,
+    meta,
   };
 };
 
