@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-dynamic-delete */
-import { excludeField } from "../../constant";
 import { tourSearchableFields } from "./tour.constant";
 import { ITour, ITourType } from "./tour.interface";
 import { Tour, TourType } from "./tour.model";
+import { QueryBuilder } from "../../utils/QueryBuilder";
 
 const createTour = async (payload: ITour) => {
   const existingTour = await Tour.findOne({ title: payload.title });
@@ -13,65 +12,86 @@ const createTour = async (payload: ITour) => {
   return tour;
 };
 
+// const getAllToursOldWay = async (query: Record<string, string>) => {
+//   // filter
+//   const filter = query;
+//   // filter = { location: 'Khulna', searchTerm: 'Explore' }
+//   // delete searchTerm from filter. Now filter = { location: 'Khulna' }
+//   // search
+//   const searchTerm = query.searchTerm || "";
+//   // sort
+//   const sort = query.sort || "-createdAt";
+//   // select
+//   const fields = query.fields?.split(",").join(" ") || "";
+//   // pagination
+//   const page = Number(query.page) || 1;
+//   const limit = Number(query.limit) || 10;
+//   const skip = (page - 1) * limit;
+
+//   // delete others fields from query except searchTerm
+//   for (const field of excludeField) {
+//     // delete filter["searchTerm"];
+//     // delete filter["sort"];
+//     delete filter[field];
+//   }
+
+//   const searchQuery = {
+//     $or: tourSearchableFields.map((field) => ({
+//       // { title: { $regex: searchTerm, $options: "i" } }
+//       [field]: { $regex: searchTerm, $options: "i" },
+//     })),
+//   };
+
+//   const filterQuery = Tour.find(filter);
+
+//   const tours = filterQuery.find(searchQuery);
+
+//   const allTours = await tours
+//     .sort(sort)
+//     .select(fields)
+//     .skip(skip)
+//     .limit(limit);
+
+//   // const tours = await Tour.find(searchQuery)
+//   //   .find(filter)
+//   //   .sort(sort)
+//   //   .select(fields)
+//   //   .skip(skip)
+//   //   .limit(limit);
+
+//   const totalTours = await Tour.countDocuments();
+//   const totalPage = Math.ceil(totalTours / limit);
+//   const meta = {
+//     page: page,
+//     limit: limit,
+//     total: totalTours,
+//     totalPage: totalPage,
+//   };
+
+//   return {
+//     data: allTours,
+//     meta,
+//   };
+// };
+
 const getAllTours = async (query: Record<string, string>) => {
-  // filter
-  const filter = query;
-  // filter = { location: 'Khulna', searchTerm: 'Explore' }
-  // delete searchTerm from filter. Now filter = { location: 'Khulna' }
-  // search
-  const searchTerm = query.searchTerm || "";
-  // sort
-  const sort = query.sort || "-createdAt";
-  // select
-  const fields = query.fields?.split(",").join(" ") || "";
-  // pagination
-  const page = Number(query.page) || 1;
-  const limit = Number(query.limit) || 10;
+  const queryBuilder = new QueryBuilder(Tour.find(), query);
 
-  const skip = (page - 1) * limit;
+  const tours = await queryBuilder.search(tourSearchableFields).filter()
+    .modelQuery;
 
-  for (const field of excludeField) {
-    // delete filter["searchTerm"];
-    // delete filter["sort"];
-    delete filter[field];
-  }
-
-  const searchQuery = {
-    $or: tourSearchableFields.map((field) => ({
-      // { title: { $regex: searchTerm, $options: "i" } }
-      [field]: { $regex: searchTerm, $options: "i" },
-    })),
-  };
-
-  const filterQuery = Tour.find(filter);
-
-  const tours = filterQuery.find(searchQuery);
-
-  const allTours = await tours
-    .sort(sort)
-    .select(fields)
-    .skip(skip)
-    .limit(limit);
-
-  // const tours = await Tour.find(searchQuery)
-  //   .find(filter)
-  //   .sort(sort)
-  //   .select(fields)
-  //   .skip(skip)
-  //   .limit(limit);
-
-  const totalTours = await Tour.countDocuments();
-  const totalPage = Math.ceil(totalTours / limit);
-  const meta = {
-    page: page,
-    limit: limit,
-    total: totalTours,
-    totalPage: totalPage,
-  };
+  // const totalTours = await Tour.countDocuments();
+  // const totalPage = Math.ceil(totalTours / limit);
+  // const meta = {
+  //   page: page,
+  //   limit: limit,
+  //   total: totalTours,
+  //   totalPage: totalPage,
+  // };
 
   return {
-    data: allTours,
-    meta,
+    data: tours,
+    // meta,
   };
 };
 
