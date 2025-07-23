@@ -32,6 +32,7 @@ export const updateUserZodSchema = z.object({
     .optional(),
   role: z.enum(Object.keys(Role) as [string]).optional(),
   IsActive: z.enum(Object.keys(IsActive) as [string]).optional(),
+  address: z.string().optional(),
   isDeleted: z
     .boolean({ invalid_type_error: "isDeleted must be boolean" })
     .optional(),
