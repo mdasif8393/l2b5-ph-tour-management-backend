@@ -8,6 +8,7 @@ import { Booking } from "./booking.model";
 import { Payment } from "../payment/payment.model";
 import { PAYMENT_STATUS } from "../payment/payment.interface";
 import { Tour } from "../tour/tour.model";
+import { SSLService } from "../sslCommerz/sslCommerz.service";
 // create random transaction id
 const getTransactionId = () => {
   return `tran_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
@@ -79,6 +80,10 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
       .populate("user", "name email  phone address")
       .populate("tour", "title costFrom ")
       .populate("payment");
+
+    const sslPayment = await SSLService.sslPaymentInit({
+      address: updatedBooking?.user.address as string,
+    });
 
     // Transaction 6th step
     await session.commitTransaction();
