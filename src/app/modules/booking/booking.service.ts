@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 import httpStatus from "http-status-codes";
@@ -9,6 +10,7 @@ import { Payment } from "../payment/payment.model";
 import { PAYMENT_STATUS } from "../payment/payment.interface";
 import { Tour } from "../tour/tour.model";
 import { SSLService } from "../sslCommerz/sslCommerz.service";
+import { ISSLCommerz } from "../sslCommerz/sslCommerz.interface";
 // create random transaction id
 const getTransactionId = () => {
   return `tran_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
@@ -81,14 +83,29 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
       .populate("tour", "title costFrom ")
       .populate("payment");
 
-    const sslPayment = await SSLService.sslPaymentInit({
-      address: updatedBooking?.user.address as string,
-    });
+    const userAddress = (updatedBooking?.user as any).address;
+    const userEmail = (updatedBooking?.user as any).email;
+    const userPhoneNumber = (updatedBooking?.user as any).phone;
+    const userName = (updatedBooking?.user as any).name;
+
+    const sslPayload: ISSLCommerz = {
+      address: userAddress,
+      email: userEmail,
+      phoneNumber: userPhoneNumber,
+      name: userName,
+      amount: amount,
+      transactionId: transactionId,
+    };
+
+    const sslPayment = await SSLService.sslPaymentInit(sslPayload);
 
     // Transaction 6th step
     await session.commitTransaction();
     session.endSession();
-    return updatedBooking;
+    return {
+      booking: updatedBooking,
+      paymentUrl: sslPayment.redirectGatewayURL,
+    };
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
