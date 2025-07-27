@@ -24,7 +24,6 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
   // Transaction 2nd step
   session.startTransaction();
 
-  // Transaction 3rd step
   try {
     const user = await User.findById(userId);
 
@@ -35,6 +34,7 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
       );
     }
 
+    // get only costFrom property
     const tour = await Tour.findById(payload.tour).select("costFrom");
     if (!tour?.costFrom) {
       throw new AppError(httpStatus.BAD_REQUEST, "No Tour Cost Found!");
@@ -43,7 +43,7 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
     const amount = Number(tour.costFrom) * Number(payload?.guestCount!);
 
     // create booking in database
-    // Transaction 5th step
+    // Transaction 3rd step
     const booking = await Booking.create(
       [
         {
@@ -56,7 +56,7 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
     );
 
     // create payment in database
-    // Transaction 5th step
+    // Transaction 4th step
     const payment = await Payment.create(
       [
         {
@@ -69,7 +69,7 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
       { session }
     );
 
-    // update payment _id inside Booking database
+    // insert payment _id inside Booking database
     // Transaction 5th step
     const updatedBooking = await Booking.findByIdAndUpdate(
       booking[0]._id,
@@ -83,6 +83,7 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
       .populate("tour", "title costFrom ")
       .populate("payment");
 
+    // send data to ssl commerz
     const userAddress = (updatedBooking?.user as any).address;
     const userEmail = (updatedBooking?.user as any).email;
     const userPhoneNumber = (updatedBooking?.user as any).phone;
@@ -103,8 +104,8 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
     await session.commitTransaction();
     session.endSession();
     return {
+      paymentUrl: sslPayment.GatewayPageURL,
       booking: updatedBooking,
-      paymentUrl: sslPayment.redirectGatewayURL,
     };
   } catch (error) {
     await session.abortTransaction();
