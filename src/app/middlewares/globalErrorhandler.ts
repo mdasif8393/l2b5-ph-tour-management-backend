@@ -6,9 +6,10 @@ import { handleDuplicateError } from "../helpers/handleDuplicateError";
 import { handleCastError } from "../helpers/handleCastError";
 import { handleValidationError } from "../helpers/handleValidationError";
 import { handleZodError } from "../helpers/handleZodError";
+import { deleteImageFromCloudinary } from "../config/cloudinary.config";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export const globalErrorhandler = (
+export const globalErrorhandler = async (
   err: any,
   req: Request,
   res: Response,
@@ -17,6 +18,18 @@ export const globalErrorhandler = (
   if (envVars.NODE_ENV === "development") {
     // eslint-disable-next-line no-console
     console.log(err);
+  }
+
+  // delete image from cloudinary
+  if (req.file) {
+    await deleteImageFromCloudinary(req.file.path);
+  }
+  //delete images from cloudinary
+  if (req.files && Array.isArray(req.files) && req.files.length) {
+    const imageUrls = (req.files as Express.Multer.File[]).map(
+      (file) => file.path
+    );
+    await Promise.all(imageUrls.map((url) => deleteImageFromCloudinary(url)));
   }
 
   let statusCode = 500;
