@@ -25,6 +25,8 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+//handle form data
+app.use(express.urlencoded({ extended: true }));
 app.use("/api/v1", router);
 
 // root route
