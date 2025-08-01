@@ -40,6 +40,10 @@ const checkAuth =
         throw new AppError(httpStatus.BAD_REQUEST, "User is deleted");
       }
 
+      if (!isUserExists.isVerified) {
+        throw new AppError(httpStatus.BAD_REQUEST, "User is not verified");
+      }
+
       // authRoles = ["ADMIN", "SUPER_ADMIN"].includes("ADMIN")
       if (!authRoles.includes(verifiedToken.role)) {
         throw new AppError(

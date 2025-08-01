@@ -1,3 +1,4 @@
+import httpStatus from "http-status-codes";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-console */
 import passport from "passport";
@@ -8,9 +9,10 @@ import {
 } from "passport-google-oauth20";
 import { envVars } from "./env";
 import { User } from "../modules/user/user.model";
-import { Role } from "../modules/user/user.interface";
+import { IsActive, Role } from "../modules/user/user.interface";
 import { Strategy as LocalStrategy } from "passport-local";
 import bcrypt from "bcryptjs";
+import AppError from "../errorHelpers/AppError";
 
 // google login middleware
 passport.use(
@@ -33,10 +35,29 @@ passport.use(
         if (!email) {
           return done(null, false, { message: "No email found" });
         }
-        let user = await User.findOne({ email });
+        let isUserExists = await User.findOne({ email });
         // create user in database
-        if (!user) {
-          user = await User.create({
+
+        if (isUserExists && !isUserExists.isVerified) {
+          // throw new AppError(httpStatus.BAD_REQUEST, "User is not verified");
+          return done(null, false, { message: "User is not verified" });
+        }
+
+        if (
+          (isUserExists && isUserExists.isActive === IsActive.INACTIVE) ||
+          (isUserExists && isUserExists.isActive === IsActive.BLOCKED)
+        ) {
+          // throw new AppError(httpStatus.BAD_REQUEST, "User inActive")
+          return done(null, false, { message: "User is inactive or blocked" });
+        }
+
+        if (isUserExists && isUserExists.isDeleted) {
+          // throw new AppError(httpStatus.BAD_REQUEST, "User is deleted");
+          return done(null, false, { message: "User is  deleted" });
+        }
+
+        if (!isUserExists) {
+          isUserExists = await User.create({
             email,
             name: profile.displayName,
             picture: profile.photos?.[0].value,
@@ -50,7 +71,7 @@ passport.use(
             ],
           });
         }
-        return done(null, user);
+        return done(null, isUserExists);
       } catch (error) {
         console.log("Google strategy error", error);
         return done(error);
@@ -74,6 +95,21 @@ passport.use(
         // if user exists in database then show error
         if (!isUserExists) {
           return done(null, false, { message: "User does not exists" });
+        }
+
+        if (!isUserExists.isVerified) {
+          // throw new AppError(httpStatus.BAD_REQUEST, "User is not verified");
+          return done("User is not verified");
+        }
+
+        if (isUserExists.isActive === IsActive.INACTIVE) {
+          // throw new AppError(httpStatus.BAD_REQUEST, "User inActive");
+          return done(`User inActive`);
+        }
+
+        if (isUserExists.isDeleted) {
+          // throw new AppError(httpStatus.BAD_REQUEST, "User is deleted");
+          return done(`User is deleted`);
         }
 
         // check user is google authenticated user or not
