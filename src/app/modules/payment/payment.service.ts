@@ -11,6 +11,7 @@ import { ITour } from "../tour/tour.interface";
 import { IUser } from "../user/user.interface";
 import { generatePdf, IInvoiceData } from "../../utils/invoice";
 import { sendEmail } from "../../utils/sendEmail";
+import { uploadBufferToCloudinary } from "../../config/cloudinary.config";
 
 const initPayment = async (bookingId: string) => {
   // Find if booking id is available or not in Payment database
@@ -97,8 +98,26 @@ const successPayment = async (query: Record<string, string>) => {
       userName: (updatedBooking.user as unknown as IUser).name,
     };
 
+    // make pdf from pdf buffer
     const pdfBuffer = await generatePdf(invoiceData);
 
+    // upload pdf to cloudinary
+    const cloudinaryResult = await uploadBufferToCloudinary(
+      pdfBuffer,
+      "invoice"
+    );
+    if (!cloudinaryResult) {
+      throw new AppError(401, "Error uploading pdf");
+    }
+
+    // update Payment model and save pdf url to it
+    await Payment.findByIdAndUpdate(
+      updatedPayment._id,
+      { invoiceUrl: cloudinaryResult.secure_url },
+      { runValidators: true, session }
+    );
+
+    // send pdf to user's email
     await sendEmail({
       to: (updatedBooking.user as unknown as IUser).email,
       subject: "Your Booking Invoice",
@@ -190,9 +209,24 @@ const cancelPayment = async (query: Record<string, string>) => {
   }
 };
 
+const getInvoiceDownloadUrl = async (paymentId: string) => {
+  const payment = await Payment.findById(paymentId).select("invoiceUrl");
+
+  if (!payment) {
+    throw new AppError(401, "Payment not found");
+  }
+
+  if (!payment.invoiceUrl) {
+    throw new AppError(401, "No invoice found");
+  }
+
+  return payment.invoiceUrl;
+};
+
 export const PaymentService = {
   successPayment,
   failPayment,
   cancelPayment,
   initPayment,
+  getInvoiceDownloadUrl,
 };
