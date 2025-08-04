@@ -23,7 +23,6 @@ export const updateUserZodSchema = z.object({
     .min(2, { message: "Name must be 2 charecters" })
     .max(50, { message: "Name too long" })
     .optional(),
-  password: z.string().min(5).optional(),
   phone: z
     .string()
     .regex(/^(?:\+88|88)?01[3-9]\d{8}$/, {
