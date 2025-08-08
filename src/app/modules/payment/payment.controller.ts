@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import httpStatus from "http-status-codes";
 import { Request, Response } from "express";
 import catchAsync from "../../utils/catchAsync";
