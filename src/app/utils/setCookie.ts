@@ -10,14 +10,16 @@ export const setAuthCookie = (res: Response, tokenInfo: AuthToken) => {
     res.cookie("accessToken", tokenInfo.accessToken, {
       // access to save cookie in front end
       httpOnly: true,
-      secure: false,
+      secure: true,
+      sameSite: "none",
     });
   }
   if (tokenInfo.refreshToken) {
     res.cookie("refreshToken", tokenInfo.refreshToken, {
       // access to save cookie in front end
       httpOnly: true,
-      secure: false,
+      secure: true,
+      sameSite: "none",
     });
   }
 };
